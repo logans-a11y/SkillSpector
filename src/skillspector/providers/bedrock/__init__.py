@@ -13,8 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Anthropic provider package (native api.anthropic.com chat models)."""
+"""AWS Bedrock provider package (Claude via SigV4-authenticated Bedrock Runtime)."""
 
-from .provider import ANTHROPIC_BASE_URL, REGISTRY_PATH, AnthropicProvider
+from .provider import (
+    BEDROCK_DEFAULT_MODEL,
+    BEDROCK_DEFAULT_REGION,
+    REGISTRY_PATH,
+    BedrockProvider,
+)
 
-__all__ = ["ANTHROPIC_BASE_URL", "REGISTRY_PATH", "AnthropicProvider"]
+__all__ = [
+    "BEDROCK_DEFAULT_MODEL",
+    "BEDROCK_DEFAULT_REGION",
+    "REGISTRY_PATH",
+    "BedrockProvider",
+]

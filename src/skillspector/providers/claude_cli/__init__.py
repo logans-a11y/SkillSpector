@@ -13,8 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Anthropic provider package (native api.anthropic.com chat models)."""
+"""Claude CLI provider — uses the locally-installed ``claude`` binary.
 
-from .provider import ANTHROPIC_BASE_URL, REGISTRY_PATH, AnthropicProvider
+No API key required. Authentication is managed by the ``claude`` CLI's
+own OAuth/keychain flow (``claude auth login``).  Set
+``SKILLSPECTOR_PROVIDER=claude_cli`` to activate.
+"""
 
-__all__ = ["ANTHROPIC_BASE_URL", "REGISTRY_PATH", "AnthropicProvider"]
+from .provider import ClaudeCLIProvider
+
+__all__ = ["ClaudeCLIProvider"]

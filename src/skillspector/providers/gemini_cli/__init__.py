@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Anthropic provider package (native api.anthropic.com chat models)."""
+"""Gemini CLI provider package (verified against gemini 0.46.0)."""
 
-from .provider import ANTHROPIC_BASE_URL, REGISTRY_PATH, AnthropicProvider
+from __future__ import annotations
 
-__all__ = ["ANTHROPIC_BASE_URL", "REGISTRY_PATH", "AnthropicProvider"]
+from .provider import GeminiCLIProvider
+
+__all__ = ["GeminiCLIProvider"]

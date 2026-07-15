@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Anthropic provider package (native api.anthropic.com chat models)."""
+"""Antigravity CLI provider package (registered but disabled — see provider.py)."""
 
-from .provider import ANTHROPIC_BASE_URL, REGISTRY_PATH, AnthropicProvider
+from __future__ import annotations
 
-__all__ = ["ANTHROPIC_BASE_URL", "REGISTRY_PATH", "AnthropicProvider"]
+from .provider import AntigravityCLIProvider
+
+__all__ = ["AntigravityCLIProvider"]

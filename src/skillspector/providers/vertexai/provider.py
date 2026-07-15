@@ -28,8 +28,10 @@ from pathlib import Path
 
 import google.auth
 import google.auth.transport.requests
+from langchain_core.language_models.chat_models import BaseChatModel
 
 from skillspector.providers import registry
+from skillspector.providers.chat_models import create_openai_compatible_chat_model
 
 REGISTRY_PATH = str(Path(__file__).with_name("model_registry.yaml"))
 
@@ -40,6 +42,7 @@ class VertexAIProvider:
     DEFAULT_MODEL = "gemini-2.5-flash"
     SLOT_DEFAULTS: dict[str, str] = {}
 
+    WIRE_MODEL_PREFIX = "google/"
 
     def resolve_credentials(self) -> tuple[str, str | None] | None:
         """Return ``(access_token, base_url)`` from Google Cloud credentials.
@@ -55,7 +58,7 @@ class VertexAIProvider:
                 are configured but invalid or malformed.
             ValueError: When project cannot be determined or token refresh fails.
         """
-        
+
         project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "").strip()
         location = os.environ.get("GOOGLE_CLOUD_LOCATION", "").strip()
 
@@ -65,7 +68,6 @@ class VertexAIProvider:
         # If we get here, the user explicitly configured VertexAI,
         # so let authentication errors propagate for debugging
 
-        
         credentials, default_project = google.auth.default(
             scopes=["https://www.googleapis.com/auth/cloud-platform"]
         )
@@ -87,13 +89,46 @@ class VertexAIProvider:
                 "service account key file."
             )
 
-        # Construct the VertexAI OpenAI-compatible base URL
-        base_url = (
-            f"https://{location}-aiplatform.googleapis.com/v1beta1/"
-            f"projects/{project}/locations/{location}/endpoints/openapi"
-        )
+        # Construct the VertexAI OpenAI-compatible base URL.
+        # The "global" location has no region prefix on the hostname.
+        if location == "global":
+            base_url = (
+                f"https://aiplatform.googleapis.com/v1beta1/"
+                f"projects/{project}/locations/global/endpoints/openapi"
+            )
+        else:
+            base_url = (
+                f"https://{location}-aiplatform.googleapis.com/v1beta1/"
+                f"projects/{project}/locations/{location}/endpoints/openapi"
+            )
 
         return access_token, base_url
+
+    def create_chat_model(
+        self,
+        model: str,
+        *,
+        max_tokens: int,
+        timeout: float | None = 120,
+    ) -> BaseChatModel | None:
+        """Create ``ChatOpenAI`` for the VertexAI OpenAI-compatible endpoint.
+
+        The endpoint requires model names prefixed with ``google/``
+        (e.g. ``google/gemini-2.5-flash``).  The prefix is applied here
+        at the wire boundary so that registry lookups and token-budget
+        calculations continue to use bare model labels.
+        """
+        wire_model = (
+            model
+            if model.startswith(self.WIRE_MODEL_PREFIX)
+            else f"{self.WIRE_MODEL_PREFIX}{model}"
+        )
+        return create_openai_compatible_chat_model(
+            model=wire_model,
+            credentials=self.resolve_credentials(),
+            max_tokens=max_tokens,
+            timeout=timeout,
+        )
 
     def get_context_length(self, model: str) -> int | None:
         return registry.lookup_context_length(REGISTRY_PATH, model)

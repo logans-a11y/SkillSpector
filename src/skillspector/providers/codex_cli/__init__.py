@@ -13,8 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Anthropic provider package (native api.anthropic.com chat models)."""
+"""Codex CLI provider — uses the locally-installed ``codex`` binary.
 
-from .provider import ANTHROPIC_BASE_URL, REGISTRY_PATH, AnthropicProvider
+No API key required. Authentication is managed by the ``codex`` CLI's
+own session (``codex login``). Set ``SKILLSPECTOR_PROVIDER=codex_cli``
+to activate.
 
-__all__ = ["ANTHROPIC_BASE_URL", "REGISTRY_PATH", "AnthropicProvider"]
+NOTE: codex_cli support is implemented using the same hardened subprocess
+helper as claude_cli (``_agent_cli.run_agent_cli``).  See provider.py for
+sandbox flags and limitations.
+"""
+
+from .provider import CodexCLIProvider
+
+__all__ = ["CodexCLIProvider"]
