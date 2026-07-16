@@ -437,6 +437,13 @@ class TestVertexAIProvider:
         monkeypatch.setenv("SKILLSPECTOR_MODEL", "gemini-2.5-pro")
         assert VertexAIProvider().resolve_model() == "gemini-2.5-pro"
 
+    def test_resolve_model_strips_wire_prefix(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # SKILLSPECTOR_MODEL set to the wire form (e.g. copied from the VertexAI
+        # endpoint's expected model parameter) must resolve to the bare label —
+        # registry lookups and token-budget calculations key off bare labels.
+        monkeypatch.setenv("SKILLSPECTOR_MODEL", "google/gemini-3.5-flash")
+        assert VertexAIProvider().resolve_model() == "gemini-3.5-flash"
+
 
 class TestOpenAICompatibleConstructor:
     """The shared OpenAI-compatible chat-model constructor."""

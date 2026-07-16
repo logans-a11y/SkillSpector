@@ -56,11 +56,21 @@ def _resolve_slot_model(slot: str, provider=None) -> str:
     Precedence: ``SKILLSPECTOR_MODEL_{SLOT}`` env var > provider
     ``resolve_model(slot)`` (which itself runs ``SKILLSPECTOR_MODEL`` env >
     provider slot default > provider ``DEFAULT_MODEL``).
+
+    Strips the provider's wire prefix (e.g. VertexAI's ``google/``) from the
+    per-slot env var too, mirroring what ``provider.resolve_model()`` already
+    does for the ``SKILLSPECTOR_MODEL`` fallback path — registry lookups and
+    token-budget calculations expect bare model labels. Without this, a
+    per-slot override set to the wire form (e.g. ``google/gemini-3.5-flash``)
+    silently misses the registry and falls back to the conservative default.
     """
     provider = provider or get_metadata_provider()
     env_key = f"SKILLSPECTOR_MODEL_{slot.upper()}"
     env_val = os.environ.get(env_key, "").strip()
     if env_val:
+        prefix = getattr(provider, "WIRE_MODEL_PREFIX", "")
+        if prefix and env_val.startswith(prefix):
+            env_val = env_val[len(prefix) :]
         return env_val
     return provider.resolve_model(slot)
 

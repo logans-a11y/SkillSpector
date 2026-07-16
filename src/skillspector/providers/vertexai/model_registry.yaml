@@ -25,6 +25,13 @@ models:
     context_length: 1000000
     max_output_tokens: 65536
 
+  # NOTE: not independently confirmed - inferred from gemini-2.5-pro /
+  # gemini-3.1-pro, which share these exact numbers. Verify against
+  # official docs if precise token budgeting for this model matters.
+  "gemini-3.5-pro":
+    context_length: 1000000
+    max_output_tokens: 65536
+
   "gemini-3.5-flash":
     context_length: 1048576
-    max_output_tokens: 8192
+    max_output_tokens: 65536

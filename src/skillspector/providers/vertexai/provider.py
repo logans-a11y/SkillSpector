@@ -137,6 +137,17 @@ class VertexAIProvider:
         return registry.lookup_max_output_tokens(REGISTRY_PATH, model)
 
     def resolve_model(self, slot: str = "default") -> str:
-        """Resolve model: ``SKILLSPECTOR_MODEL`` env > slot default > ``DEFAULT_MODEL``."""
+        """Resolve model: ``SKILLSPECTOR_MODEL`` env > slot default > ``DEFAULT_MODEL``.
+
+        Strips a ``google/`` wire prefix if present in the env var — registry
+        lookups and token-budget calculations expect bare labels (see
+        ``create_chat_model``, which re-applies the prefix at the wire
+        boundary). Without this, a ``SKILLSPECTOR_MODEL`` set to the wire
+        form (e.g. ``google/gemini-3.5-flash``) silently misses every
+        registry lookup and falls back to the conservative 128k default.
+        """
         user_input = os.environ.get("SKILLSPECTOR_MODEL", "").strip()
-        return user_input or self.SLOT_DEFAULTS.get(slot, "") or self.DEFAULT_MODEL
+        model = user_input or self.SLOT_DEFAULTS.get(slot, "") or self.DEFAULT_MODEL
+        if model.startswith(self.WIRE_MODEL_PREFIX):
+            model = model[len(self.WIRE_MODEL_PREFIX) :]
+        return model
